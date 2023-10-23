@@ -891,7 +891,7 @@ def DB_Upload_Cadence(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     while True:
-        payload = list()
+        payload = []
     #    a = input(f'\n\nUSER: ')        
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -923,16 +923,7 @@ def DB_Upload_Cadence(query):
             'memory_type': 'Cadence',
         }
         client.upsert(collection_name=collection_name,
-                             points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-        # Search the collection
-    #    query_vector = model.encode([query])[0].tolist()
-    #    try:
-    #        hits = client.search(
-    #            collection_name=collection_name,
-    #            query_vector=query_vector,
-    #        limit=5)
-
-            # Print the result
+                             points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
     #        for hit in hits:
     #            print(hit.payload['message'])
     #        print('done')
@@ -955,7 +946,7 @@ def DB_Upload_Heuristics(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
     while True:
-        payload = list()
+        payload = []
     #    a = input(f'\n\nUSER: ')        
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -990,7 +981,7 @@ def DB_Upload_Heuristics(query):
     #            with_vectors=True,
     #            with_payload=True,
     #        )
-                             
+
         # Search the collection
         query_vector = embedding
         try:
@@ -1016,11 +1007,9 @@ def upload_implicit_long_term_memories(query):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    payload = list()    
-                # Define the collection name
+    payload = []
+    payload = []
     collection_name = f"Implicit_Long_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
     try:
         collection_info = client.get_collection(collection_name=collection_name)
     except:
@@ -1041,8 +1030,7 @@ def upload_implicit_long_term_memories(query):
         'memory_type': 'Implicit_Long_Term',
     }
     client.upsert(collection_name=collection_name,
-                         points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-                # Search the collection
+                         points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
     print('\n\nSYSTEM: Upload Successful!')
     return query
         
@@ -1052,11 +1040,9 @@ def upload_explicit_long_term_memories(query):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    payload = list()    
-                # Define the collection name
+    payload = []
+    payload = []
     collection_name = f"Explicit_Long_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
     try:
         collection_info = client.get_collection(collection_name=collection_name)
     except:
@@ -1077,8 +1063,7 @@ def upload_explicit_long_term_memories(query):
         'memory_type': 'Explicit_Long_Term',
     }
     client.upsert(collection_name=collection_name,
-                         points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-                # Search the collection
+                         points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
     print('\n\nSYSTEM: Upload Successful!')
     return query
         
@@ -1088,43 +1073,42 @@ def ask_upload_implicit_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    payload = []
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
         lines = memories.splitlines()
         for line in lines:
-            if line.strip() == '':  # This condition checks for blank lines
+            if line.strip() == '':
                 continue
-            else:
-                print(line)
-                payload = list()
+            print(line)
+            payload = []
             #    a = input(f'\n\nUSER: ')        
-                # Define the collection name
-                collection_name = f"Implicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
-                try:
-                    collection_info = client.get_collection(collection_name=collection_name)
-                except:
-                    client.create_collection(
-                        collection_name=collection_name,
-                        vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
-                    )
-                vector1 = model.encode([line])[0].tolist()
-                unique_id = str(uuid4())
-                point_id = unique_id + str(int(timestamp))
-                metadata = {
-                    'bot': bot_name,
-                    'time': timestamp,
-                    'message': line,
-                    'timestring': timestring,
-                    'uuid': unique_id,
-                    'user': username,
-                    'memory_type': 'Implicit_Short_Term',
-                }
-                client.upsert(collection_name=collection_name,
-                                     points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-                # Search the collection
+            # Define the collection name
+            collection_name = f"Implicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
+            # Create the collection only if it doesn't exist
+            try:
+                collection_info = client.get_collection(collection_name=collection_name)
+            except:
+                client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+                )
+            vector1 = model.encode([line])[0].tolist()
+            unique_id = str(uuid4())
+            point_id = unique_id + str(int(timestamp))
+            metadata = {
+                'bot': bot_name,
+                'time': timestamp,
+                'message': line,
+                'timestring': timestring,
+                'uuid': unique_id,
+                'user': username,
+                'memory_type': 'Implicit_Short_Term',
+            }
+            client.upsert(collection_name=collection_name,
+                                 points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
         print('\n\nSYSTEM: Upload Successful!')
         return 'yes'
     else:
@@ -1137,43 +1121,42 @@ def ask_upload_explicit_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    payload = []
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
         lines = memories.splitlines()
         for line in lines:
-            if line.strip() == '':  # This condition checks for blank lines
+            if line.strip() == '':
                 continue
-            else:
-                print(line)
-                payload = list()
+            print(line)
+            payload = []
             #    a = input(f'\n\nUSER: ')        
-                # Define the collection name
-                collection_name = f"Explicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
-                try:
-                    collection_info = client.get_collection(collection_name=collection_name)
-                except:
-                    client.create_collection(
-                        collection_name=collection_name,
-                        vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
-                    )
-                vector1 = model.encode([line])[0].tolist()
-                unique_id = str(uuid4())
-                point_id = unique_id + str(int(timestamp))
-                metadata = {
-                    'bot': bot_name,
-                    'time': timestamp,
-                    'message': line,
-                    'timestring': timestring,
-                    'uuid': unique_id,
-                    'user': username,
-                    'memory_type': 'Explicit_Short_Term',
-                }
-                client.upsert(collection_name=collection_name,
-                                     points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-                # Search the collection
+            # Define the collection name
+            collection_name = f"Explicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
+            # Create the collection only if it doesn't exist
+            try:
+                collection_info = client.get_collection(collection_name=collection_name)
+            except:
+                client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+                )
+            vector1 = model.encode([line])[0].tolist()
+            unique_id = str(uuid4())
+            point_id = unique_id + str(int(timestamp))
+            metadata = {
+                'bot': bot_name,
+                'time': timestamp,
+                'message': line,
+                'timestring': timestring,
+                'uuid': unique_id,
+                'user': username,
+                'memory_type': 'Explicit_Short_Term',
+            }
+            client.upsert(collection_name=collection_name,
+                                 points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
         print('\n\nSYSTEM: Upload Successful!')
         return 'yes'
     else:
@@ -1186,9 +1169,9 @@ def ask_upload_episodic_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"       
         # Create Qdrant client
     #    client = QdrantClient(":memory:")
@@ -1214,8 +1197,9 @@ def ask_upload_episodic_memories(memories):
             'uuid': unique_id,
             'memory_type': 'Episodic',
         }
+        payload = []
         client.upsert(collection_name=collection_name,
-                             points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
+                             points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
         return 'yes'
     else:
         # User clicked "No"
@@ -1227,82 +1211,81 @@ def ask_upload_memories(memories, memories2):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
+    payload = []
     print(f'\nIMPLICIT MEMORIES\n-------------')
     print(memories)
     print(f'\nEXPLICIT MEMORIES\n-------------')
     print(memories2)
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
         lines = memories.splitlines()
         for line in lines:
             if line.strip():
                 continue
-            else:
-                print(line)
-                payload = list()
+            print(line)
+            payload = []
             #    a = input(f'\n\nUSER: ')        
-                # Define the collection name
-                collection_name = f"Implicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
-                try:
-                    collection_info = client.get_collection(collection_name=collection_name)
-                except:
-                    client.create_collection(
-                        collection_name=collection_name,
-                        vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
-                    )
-                vector1 = model.encode([line])[0].tolist()
-                unique_id = str(uuid4())
-                point_id = unique_id + str(int(timestamp))
-                metadata = {
-                    'bot': bot_name,
-                    'time': timestamp,
-                    'message': line,
-                    'timestring': timestring,
-                    'uuid': unique_id,
-                    'user': username,
-                    'memory_type': 'Implicit_Short_Term',
-                }
-                client.upsert(collection_name=collection_name,
-                                     points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])    
-                # Search the collection
-                payload.clear()
+            # Define the collection name
+            collection_name = f"Implicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
+            # Create the collection only if it doesn't exist
+            try:
+                collection_info = client.get_collection(collection_name=collection_name)
+            except:
+                client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+                )
+            vector1 = model.encode([line])[0].tolist()
+            unique_id = str(uuid4())
+            point_id = unique_id + str(int(timestamp))
+            metadata = {
+                'bot': bot_name,
+                'time': timestamp,
+                'message': line,
+                'timestring': timestring,
+                'uuid': unique_id,
+                'user': username,
+                'memory_type': 'Implicit_Short_Term',
+            }
+            client.upsert(collection_name=collection_name,
+                                 points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
+            # Search the collection
+            payload.clear()
         lines = memories2.splitlines()
         for line in lines:
             if line.strip():
                 continue
-            else:
-                print(line)
-                payload = list()
+            print(line)
+            payload = []
             #    a = input(f'\n\nUSER: ')        
-                # Define the collection name
-                collection_name = f"Explicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
-                # Create the collection only if it doesn't exist
-                try:
-                    collection_info = client.get_collection(collection_name=collection_name)
-                except:
-                    client.create_collection(
-                        collection_name=collection_name,
-                        vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
-                    )
-                vector1 = model.encode([line])[0].tolist()
-                unique_id = str(uuid4())
-                point_id = unique_id + str(int(timestamp))
-                metadata = {
-                    'bot': bot_name,
-                    'time': timestamp,
-                    'message': line,
-                    'timestring': timestring,
-                    'uuid': unique_id,
-                    'user': username,
-                    'memory_type': 'Explicit_Short_Term',
-                }
-                client.upsert(collection_name=collection_name,
-                                     points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])   
-                payload.clear()
-        print('\n\nSYSTEM: Upload Successful!')     
+            # Define the collection name
+            collection_name = f"Explicit_Short_Term_Memory_Bot_{bot_name}_User_{username}"
+            # Create the collection only if it doesn't exist
+            try:
+                collection_info = client.get_collection(collection_name=collection_name)
+            except:
+                client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=models.VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+                )
+            vector1 = model.encode([line])[0].tolist()
+            unique_id = str(uuid4())
+            point_id = unique_id + str(int(timestamp))
+            metadata = {
+                'bot': bot_name,
+                'time': timestamp,
+                'message': line,
+                'timestring': timestring,
+                'uuid': unique_id,
+                'user': username,
+                'memory_type': 'Explicit_Short_Term',
+            }
+            client.upsert(collection_name=collection_name,
+                                 points=[PointStruct(id=unique_id, vector=vector1, payload=metadata)])
+            payload.clear()
+        print('\n\nSYSTEM: Upload Successful!')
         return 'yes'
     else:
         # User clicked "No"
@@ -1330,9 +1313,7 @@ class MainConversation:
 
     def append(self, timestring, username, a, bot_name, response_two):
         # Append new entry to the running conversation
-        entry = []
-        entry.append(f"{timestring}-{username}: {a}")
-        entry.append(f"Response: {response_two}")
+        entry = [f"{timestring}-{username}: {a}", f"Response: {response_two}"]
         self.running_conversation.append("\n\n".join(entry))  # Join the entry with "\n\n"
 
         # Remove oldest entry if conversation length exceeds max entries
@@ -1365,10 +1346,7 @@ class MainConversation:
         return self.main_conversation + ["\n\n".join(entry.split("\n\n")) for entry in self.running_conversation]
         
     def get_last_entry(self):
-        if self.running_conversation:
-            return self.running_conversation[-1]
-        else:
-            return None
+        return self.running_conversation[-1] if self.running_conversation else None
         
     
 class ChatBotApplication(tk.Frame):
@@ -1414,7 +1392,7 @@ class ChatBotApplication(tk.Frame):
         # Load the conversation history from the JSON file
         bot_name = open_file('./config/prompt_bot_name.txt')
         username = open_file('./config/prompt_username.txt')
-        
+
         file_path = f'./history/{username}/{bot_name}_main_conversation_history.json'
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -1423,10 +1401,7 @@ class ChatBotApplication(tk.Frame):
             conversation_history = conversation_data['main_conversation'] + conversation_data['running_conversation']
             # Display the conversation history in the text widget
             for entry in conversation_history:
-                if isinstance(entry, list):
-                    message = '\n'.join(entry)
-                else:
-                    message = entry
+                message = '\n'.join(entry) if isinstance(entry, list) else entry
                 self.conversation_text.insert(tk.END, message + '\n\n')
         except FileNotFoundError:
             # Handle the case when the JSON file is not found
@@ -1438,8 +1413,9 @@ class ChatBotApplication(tk.Frame):
     # Edit Bot Name
     def choose_bot_name(self):
         username = open_file('./config/prompt_username.txt')
-        bot_name = simpledialog.askstring("Choose Bot Name", "Type a Bot Name:")
-        if bot_name:
+        if bot_name := simpledialog.askstring(
+            "Choose Bot Name", "Type a Bot Name:"
+        ):
             file_path = "./config/prompt_bot_name.txt"
             with open(file_path, 'w') as file:
                 file.write(bot_name)
@@ -1462,9 +1438,9 @@ class ChatBotApplication(tk.Frame):
                     else:
                         print(f'Source file not found: {src}')
             else:
-                print(f'Directory already exists at: {user_bot_path}') 
+                print(f'Directory already exists at: {user_bot_path}')
             self.conversation_text.delete("1.0", tk.END)
-            self.display_conversation_history() 
+            self.display_conversation_history()
             self.master.destroy()
             Qdrant_Experimental_Generate_Chatbot_Manual_Memory_Upload()
         
@@ -1472,8 +1448,9 @@ class ChatBotApplication(tk.Frame):
     # Edit User Name
     def choose_username(self):
         bot_name = open_file('./config/prompt_bot_name.txt')
-        username = simpledialog.askstring("Choose Username", "Type a Username:")
-        if username:
+        if username := simpledialog.askstring(
+            "Choose Username", "Type a Username:"
+        ):
             file_path = "./config/prompt_username.txt"
             with open(file_path, 'w') as file:
                 file.write(username)
@@ -1496,12 +1473,11 @@ class ChatBotApplication(tk.Frame):
                     else:
                         print(f'Source file not found: {src}')
             else:
-                print(f'Directory already exists at: {user_bot_path}') 
+                print(f'Directory already exists at: {user_bot_path}')
             self.conversation_text.delete("1.0", tk.END)
             self.display_conversation_history()
             self.master.destroy()
             Qdrant_Experimental_Generate_Chatbot_Manual_Memory_Upload()
-        pass
         
         
     # Edits Main Chatbot System Prompt

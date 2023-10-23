@@ -33,7 +33,7 @@ from sentence_transformers import SentenceTransformer
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -45,7 +45,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -57,7 +57,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -69,7 +69,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -81,7 +81,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -93,7 +93,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -105,7 +105,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -117,7 +117,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -128,14 +128,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 openai.api_key = open_file('api_keys/key_openai.txt')
 
@@ -192,11 +190,12 @@ class MainConversation:
 
     def append(self, timestring, username, a, bot_name, output_one, output_two, response_two):
         # Append new entry to the running conversation
-        entry = []
-        entry.append(f"{timestring}-{username}: {a}")
-        entry.append(f"{bot_name}'s Inner Monologue: {output_one}")
-        entry.append(f"Intuition: {output_two}")
-        entry.append(f"Response: {response_two}")
+        entry = [
+            f"{timestring}-{username}: {a}",
+            f"{bot_name}'s Inner Monologue: {output_one}",
+            f"Intuition: {output_two}",
+            f"Response: {response_two}",
+        ]
         self.running_conversation.append("\n\n".join(entry))  # Join the entry with "\n\n"
 
         # Remove oldest entry if conversation length exceeds max entries
@@ -270,10 +269,7 @@ class ChatBotApplication(tk.Frame):
             conversation_history = conversation_data['main_conversation'] + conversation_data['running_conversation']
             # Display the conversation history in the text widget
             for entry in conversation_history:
-                if isinstance(entry, list):
-                    message = '\n'.join(entry)
-                else:
-                    message = entry
+                message = '\n'.join(entry) if isinstance(entry, list) else entry
                 self.conversation_text.insert(tk.END, message + '\n\n')
         except FileNotFoundError:
             # Handle the case when the JSON file is not found
@@ -283,8 +279,9 @@ class ChatBotApplication(tk.Frame):
         
         
     def choose_bot_name(self):
-        bot_name = simpledialog.askstring("Choose Bot Name", "Type a Bot Name:")
-        if bot_name:
+        if bot_name := simpledialog.askstring(
+            "Choose Bot Name", "Type a Bot Name:"
+        ):
             file_path = "./config/prompt_bot_name.txt"
             with open(file_path, 'w') as file:
                 file.write(bot_name)
@@ -293,14 +290,14 @@ class ChatBotApplication(tk.Frame):
         
 
     def choose_username(self):
-        username = simpledialog.askstring("Choose Username", "Type a Username:")
-        if username:
+        if username := simpledialog.askstring(
+            "Choose Username", "Type a Username:"
+        ):
             file_path = "./config/prompt_username.txt"
             with open(file_path, 'w') as file:
                 file.write(username)
             self.conversation_text.delete("1.0", tk.END)
             self.display_conversation_history()
-        pass
         
         
     def Edit_Main_Prompt(self):

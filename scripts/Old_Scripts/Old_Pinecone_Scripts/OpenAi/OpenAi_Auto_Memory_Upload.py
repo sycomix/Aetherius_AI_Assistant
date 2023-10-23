@@ -31,7 +31,7 @@ from tkinter import ttk, scrolledtext, simpledialog, font
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -43,7 +43,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -55,7 +55,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -67,7 +67,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -79,7 +79,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -91,7 +91,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -103,7 +103,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -115,7 +115,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -126,14 +126,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 openai.api_key = open_file('api_keys/key_openai.txt')
 
@@ -185,7 +183,6 @@ def DB_Upload_Cadence(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     while True:
-        payload = list()
      #   a = input(f'\n\nUSER: ')
         if query == 'Delete All Data':
             while True:
@@ -199,13 +196,9 @@ def DB_Upload_Cadence(query):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Cadence delete cancelled.')
                     return
-            else:
-                pass
         if query == 'Exit':
             while True:
                 return
-            else:
-                pass
         vector = gpt3_embedding(query)
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -213,7 +206,7 @@ def DB_Upload_Cadence(query):
         metadata = {'speaker': bot_name, 'time': timestamp, 'message': query, 'timestring': timestring,
                     'uuid': unique_id, "memory_type": "cadence", "user": username}
         save_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % unique_id, metadata)
-        payload.append((unique_id, vector, {"memory_type": "cadence", "user": username}))
+        payload = [(unique_id, vector, {"memory_type": "cadence", "user": username})]
         vdb.upsert(payload, namespace=f'{bot_name}')
         print('\n\nSYSTEM: Upload Successful!')
         return query
@@ -232,7 +225,6 @@ def DB_Upload_Heuristics(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
     while True:
-        payload = list()
     #    a = input(f'\n\nUSER: ')
         if query == 'Delete All Data':
             while True:
@@ -246,13 +238,9 @@ def DB_Upload_Heuristics(query):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Heuristics delete cancelled.')
                     return
-            else:
-                pass
         if query == 'Exit':
             while True:
                 return
-            else:
-                pass
         vector = gpt3_embedding(query)
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -260,7 +248,13 @@ def DB_Upload_Heuristics(query):
         metadata = {'speaker': bot_name, 'time': timestamp, 'message': query, 'timestring': timestring,
                     'uuid': unique_id, "memory_type": "heuristics", "user": username}
         save_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % unique_id, metadata)
-        payload.append((unique_id, vector, {"memory_type": "heuristics", "user": username}))
+        payload = [
+            (
+                unique_id,
+                vector,
+                {"memory_type": "heuristics", "user": username},
+            )
+        ]
         vdb.upsert(payload, namespace=f'{bot_name}')
         print('\n\nSYSTEM: Upload Successful!')
         return query
@@ -285,11 +279,12 @@ class MainConversation:
 
     def append(self, timestring, username, a, bot_name, output_one, output_two, response_two):
         # Append new entry to the running conversation
-        entry = []
-        entry.append(f"{timestring}-{username}: {a}")
-        entry.append(f"{bot_name}'s Inner Monologue: {output_one}")
-        entry.append(f"Intuition: {output_two}")
-        entry.append(f"Response: {response_two}")
+        entry = [
+            f"{timestring}-{username}: {a}",
+            f"{bot_name}'s Inner Monologue: {output_one}",
+            f"Intuition: {output_two}",
+            f"Response: {response_two}",
+        ]
         self.running_conversation.append("\n\n".join(entry))  # Join the entry with "\n\n"
 
         # Remove oldest entry if conversation length exceeds max entries
@@ -361,10 +356,7 @@ class ChatBotApplication(tk.Frame):
             conversation_history = conversation_data['main_conversation'] + conversation_data['running_conversation']
             # Display the conversation history in the text widget
             for entry in conversation_history:
-                if isinstance(entry, list):
-                    message = '\n'.join(entry)
-                else:
-                    message = entry
+                message = '\n'.join(entry) if isinstance(entry, list) else entry
                 self.conversation_text.insert(tk.END, message + '\n\n')
         except FileNotFoundError:
             # Handle the case when the JSON file is not found
@@ -375,8 +367,9 @@ class ChatBotApplication(tk.Frame):
     
     # Edit Bot Name
     def choose_bot_name(self):
-        bot_name = simpledialog.askstring("Choose Bot Name", "Type a Bot Name:")
-        if bot_name:
+        if bot_name := simpledialog.askstring(
+            "Choose Bot Name", "Type a Bot Name:"
+        ):
             file_path = "./config/prompt_bot_name.txt"
             with open(file_path, 'w') as file:
                 file.write(bot_name)
@@ -386,14 +379,14 @@ class ChatBotApplication(tk.Frame):
 
     # Edit User Name
     def choose_username(self):
-        username = simpledialog.askstring("Choose Username", "Type a Username:")
-        if username:
+        if username := simpledialog.askstring(
+            "Choose Username", "Type a Username:"
+        ):
             file_path = "./config/prompt_username.txt"
             with open(file_path, 'w') as file:
                 file.write(username)
             self.conversation_text.delete("1.0", tk.END)
             self.display_conversation_history()
-        pass
         
         
     # Edits Main Chatbot System Prompt
@@ -877,14 +870,14 @@ class ChatBotApplication(tk.Frame):
         # # Number of Messages before conversation is summarized, higher number, higher api cost. Change to 3 when using GPT 3.5 due to token usage.
         m = multiprocessing.Manager()
         lock = m.Lock()
-        tasklist = list()
-        conversation = list()
-        int_conversation = list()
-        conversation2 = list()
-        summary = list()
-        auto = list()
-        payload = list()
-        consolidation  = list()
+        tasklist = []
+        conversation = []
+        int_conversation = []
+        conversation2 = []
+        summary = []
+        auto = []
+        payload = []
+        consolidation = []
         counter = 0
         counter2 = 0
         mem_counter = 0
@@ -910,8 +903,8 @@ class ChatBotApplication(tk.Frame):
             os.makedirs(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus')
         if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
             os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
-        if not os.path.exists(f'nexus/global_heuristics_nexus'):
-            os.makedirs(f'nexus/global_heuristics_nexus')
+        if not os.path.exists('nexus/global_heuristics_nexus'):
+            os.makedirs('nexus/global_heuristics_nexus')
         if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
             os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
         if not os.path.exists(f'logs/{bot_name}/{username}/complete_chat_logs'):
@@ -924,6 +917,7 @@ class ChatBotApplication(tk.Frame):
             os.makedirs(f'logs/{bot_name}/{username}/intuition_logs')
         if not os.path.exists(f'history/{username}'):
             os.makedirs(f'history/{username}')
+        tasklist_counter = 0
     #   r = sr.Recognizer()
         while True:
             conversation_history = main_conversation.get_conversation_history()
@@ -932,14 +926,17 @@ class ChatBotApplication(tk.Frame):
             timestamp = time()
             timestring = timestamp_to_datetime(timestamp)
             # # Start or Continue Conversation based on if response exists
-            conversation.append({'role': 'system', 'content': '%s' % main_prompt})
-            int_conversation.append({'role': 'system', 'content': '%s' % main_prompt})
+            conversation.append({'role': 'system', 'content': f'{main_prompt}'})
+            int_conversation.append({'role': 'system', 'content': f'{main_prompt}'})
             if 'response_two' in locals():
-                conversation.append({'role': 'user', 'content': a})
-                conversation.append({'role': 'assistant', 'content': "%s" % response_two})
-                pass
+                conversation.extend(
+                    (
+                        {'role': 'user', 'content': a},
+                        {'role': 'assistant', 'content': f"{response_two}"},
+                    )
+                )
             else:
-                conversation.append({'role': 'assistant', 'content': "%s" % greeting_msg})
+                conversation.append({'role': 'assistant', 'content': f"{greeting_msg}"})
                 print("\n%s" % greeting_msg)
             # # User Input Voice
         #    yn_voice = input(f'\n\nPress Enter to Speak')
@@ -980,22 +977,28 @@ class ChatBotApplication(tk.Frame):
                     elif user_input == 'n':
                         print('\n\nSYSTEM: Short-Term Memory delete cancelled.')
                         return
-                else:
-                    pass
             # # Check for "Exit"
             if a == 'Exit':
                 return
-            conversation.append({'role': 'user', 'content': a})        
-            # # Generate Semantic Search Terms
-            tasklist.append({'role': 'system', 'content': "You are a task coordinator. Your job is to take user input and create a list of 2-5 inquiries to be used for a semantic database search of a chatbot's memories. Use the format [- 'INQUIRY']."})
-            tasklist.append({'role': 'user', 'content': "USER INQUIRY: %s" % a})
-            tasklist.append({'role': 'assistant', 'content': "List of Semantic Search Terms: "})
+            conversation.append({'role': 'user', 'content': a})
+            tasklist.extend(
+                (
+                    {
+                        'role': 'system',
+                        'content': "You are a task coordinator. Your job is to take user input and create a list of 2-5 inquiries to be used for a semantic database search of a chatbot's memories. Use the format [- 'INQUIRY'].",
+                    },
+                    {'role': 'user', 'content': f"USER INQUIRY: {a}"},
+                    {
+                        'role': 'assistant',
+                        'content': "List of Semantic Search Terms: ",
+                    },
+                )
+            )
             tasklist_output = chatgpt200_completion(tasklist)
             lines = tasklist_output.splitlines()
             db_term = {}
             db_term_result = {}
             db_term_result2 = {}
-            tasklist_counter = 0
             # # Split bullet points into separate lines to be used as individual queries during a parallel db search
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 futures = [
@@ -1003,42 +1006,124 @@ class ChatBotApplication(tk.Frame):
                         lambda line, _index, conversation, int_conversation: (
                             tasklist_vector := gpt3_embedding(line),
                             db_term.update({_index: tasklist_vector}),
-                            results := vdb.query(vector=db_term[_index], filter={
-            "memory_type": "explicit_long_term", "user": username}, top_k=7, namespace=f'{bot_name}'),
-                            db_term_result.update({_index: load_conversation_explicit_long_term_memory(results)}),
-                            results := vdb.query(vector=db_term[_index], filter={
-            "memory_type": "implicit_long_term", "user": username}, top_k=7, namespace=f'{bot_name}'),
-                            db_term_result2.update({_index: load_conversation_implicit_long_term_memory(results)}),
-                            conversation.append({'role': 'assistant', 'content': "MEMORIES: %s" % db_term_result[_index]}),
-                            conversation.append({'role': 'assistant', 'content': "MEMORIES: %s" % db_term_result2[_index]}),
+                            results := vdb.query(
+                                vector=db_term[_index],
+                                filter={
+                                    "memory_type": "explicit_long_term",
+                                    "user": username,
+                                },
+                                top_k=7,
+                                namespace=f'{bot_name}',
+                            ),
+                            db_term_result.update(
+                                {
+                                    _index: load_conversation_explicit_long_term_memory(
+                                        results
+                                    )
+                                }
+                            ),
+                            results := vdb.query(
+                                vector=db_term[_index],
+                                filter={
+                                    "memory_type": "implicit_long_term",
+                                    "user": username,
+                                },
+                                top_k=7,
+                                namespace=f'{bot_name}',
+                            ),
+                            db_term_result2.update(
+                                {
+                                    _index: load_conversation_implicit_long_term_memory(
+                                        results
+                                    )
+                                }
+                            ),
+                            conversation.append(
+                                {
+                                    'role': 'assistant',
+                                    'content': f"MEMORIES: {db_term_result[_index]}",
+                                }
+                            ),
+                            conversation.append(
+                                {
+                                    'role': 'assistant',
+                                    'content': f"MEMORIES: {db_term_result2[_index]}",
+                                }
+                            ),
                             (
-                                int_conversation.append({'role': 'assistant', 'content': "MEMORIES: %s" % db_term_result[_index]}),
-                                int_conversation.append({'role': 'assistant', 'content': "MEMORIES: %s" % db_term_result2[_index]})
-                            ) if _index < 5 else None,
+                                int_conversation.append(
+                                    {
+                                        'role': 'assistant',
+                                        'content': f"MEMORIES: {db_term_result[_index]}",
+                                    }
+                                ),
+                                int_conversation.append(
+                                    {
+                                        'role': 'assistant',
+                                        'content': f"MEMORIES: {db_term_result2[_index]}",
+                                    }
+                                ),
+                            )
+                            if _index < 5
+                            else None,
                         ),
-                        line, _index, conversation.copy(), int_conversation.copy()
+                        line,
+                        _index,
+                        conversation.copy(),
+                        int_conversation.copy(),
                     )
-                    for _index, line in enumerate(lines) if line.strip()
+                    for _index, line in enumerate(lines)
+                    if line.strip()
                 ] + [
-                    executor.submit(lambda: (
-                        vdb.query(vector=vector_input, filter={
-            "memory_type": "episodic", "user": username}, top_k=10, namespace=f'{bot_name}'),
-                        load_conversation_episodic_memory)
+                    executor.submit(
+                        lambda: (
+                            vdb.query(
+                                vector=vector_input,
+                                filter={
+                                    "memory_type": "episodic",
+                                    "user": username,
+                                },
+                                top_k=10,
+                                namespace=f'{bot_name}',
+                            ),
+                            load_conversation_episodic_memory,
+                        )
                     ),
-                    executor.submit(lambda: (
-                        vdb.query(vector=vector_input, filter={
-            "memory_type": "explicit_short_term"}, top_k=6, namespace=f'short_term_memory_User_{username}_Bot_{bot_name}'),
-                        load_conversation_explicit_short_term_memory)
+                    executor.submit(
+                        lambda: (
+                            vdb.query(
+                                vector=vector_input,
+                                filter={"memory_type": "explicit_short_term"},
+                                top_k=6,
+                                namespace=f'short_term_memory_User_{username}_Bot_{bot_name}',
+                            ),
+                            load_conversation_explicit_short_term_memory,
+                        )
                     ),
-                    executor.submit(lambda: (
-                        vdb.query(vector=vector_input, filter={
-            "memory_type": "flashbulb", "user": username}, top_k=3, namespace=f'{bot_name}'),
-                        load_conversation_flashbulb_memory)
+                    executor.submit(
+                        lambda: (
+                            vdb.query(
+                                vector=vector_input,
+                                filter={
+                                    "memory_type": "flashbulb",
+                                    "user": username,
+                                },
+                                top_k=3,
+                                namespace=f'{bot_name}',
+                            ),
+                            load_conversation_flashbulb_memory,
+                        )
                     ),
-                    executor.submit(lambda: (
-                        vdb.query(vector=vector_input, filter={
-            "memory_type": "heuristics"}, top_k=5, namespace=f'{bot_name}'),
-                        load_conversation_heuristics)
+                    executor.submit(
+                        lambda: (
+                            vdb.query(
+                                vector=vector_input,
+                                filter={"memory_type": "heuristics"},
+                                top_k=5,
+                                namespace=f'{bot_name}',
+                            ),
+                            load_conversation_heuristics,
+                        )
                     ),
                 ]
                 db_search_1, db_search_2, db_search_3, db_search_14 = None, None, None, None
@@ -1058,7 +1143,7 @@ class ChatBotApplication(tk.Frame):
             conversation.append({'role': 'assistant', 'content': "MEMORIES: %s;%s;%s;\n\nHEURISTICS: %s;\nUSER MESSAGE: %s;\nBased on %s's memories and the user, %s's message, compose a short and concise silent soliloquy as %s's inner monologue that reflects on %s's deepest contemplations and emotions in relation to the user's message.\n\nINNER_MONOLOGUE: " % (db_search_1, db_search_2, db_search_3, db_search_14, a, bot_name, username, bot_name, bot_name)})
             output_one = chatgpt250_completion(conversation)
             message = output_one
-            vector_monologue = gpt3_embedding('Inner Monologue: ' + message)
+            vector_monologue = gpt3_embedding(f'Inner Monologue: {message}')
             print('\n\nINNER_MONOLOGUE: %s' % output_one)
             # # Clear Conversation List
             conversation.clear()

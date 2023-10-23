@@ -24,7 +24,7 @@ class OpenAiChatbotMenu(tk.Toplevel):
         # Filter out only the .py files 
         scripts = [file for file in files if file.endswith('.py')]
         # Create a button for each script
-        for i, script in enumerate(scripts):
+        for script in scripts:
             # Replace underscores with spaces
             script_name = script[:-3].replace('_', ' ')
             button = ttk.Button(self, text=script_name, command=lambda s=script: self.run_script(s))

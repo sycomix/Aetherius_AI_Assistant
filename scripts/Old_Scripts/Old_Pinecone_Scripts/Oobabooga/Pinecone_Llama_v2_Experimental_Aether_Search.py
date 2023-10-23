@@ -30,7 +30,7 @@ import shutil
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -42,7 +42,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -54,7 +54,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -66,7 +66,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -78,7 +78,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -90,7 +90,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -102,7 +102,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -114,7 +114,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -125,14 +125,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
 vdb = pinecone.Index("aetherius")
@@ -572,24 +570,21 @@ def oobabooga_consolidationmem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.85,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -603,13 +598,12 @@ def oobabooga_consolidationmem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -631,24 +625,21 @@ def oobabooga_associativemem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.7,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -662,13 +653,12 @@ def oobabooga_associativemem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -1222,12 +1212,10 @@ def search_episodic_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "episodic", "user": username}, top_k=5, namespace=f'{bot_name}')
-            memories = load_conversation_episodic_memory(results)
-            return memories
+            return load_conversation_episodic_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories
+        return "Error"
             
     
 def search_flashbulb_db(line_vec):
@@ -1240,12 +1228,10 @@ def search_flashbulb_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "flashbulb", "user": username}, top_k=2, namespace=f'{bot_name}')
-            memories = load_conversation_flashbulb_memory(results)
-            return memories
+            return load_conversation_flashbulb_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories 
+        return "Error" 
     
     
 def search_explicit_db(line_vec):
@@ -1274,7 +1260,7 @@ def load_conversation_web_scrape_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
     try:
-        result = list()
+        result = []
         for m in results['matches']:
             info = load_json(f'nexus/{bot_name}/{username}/web_scrape_memory_nexus/%s.json' % m['id'])
             result.append(info)
@@ -1283,8 +1269,7 @@ def load_conversation_web_scrape_memory(results):
         return '\n'.join(messages).strip()
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
     
     
 def search_webscrape_db(line):
@@ -1297,35 +1282,29 @@ def search_webscrape_db(line):
         with lock:
             line_vec = model.encode([line]).tolist()
             results = vdb.query(vector=line_vec, filter={"memory_type": "web_scrape"}, top_k=15, namespace=f'Tools_User_{username}_Bot_{bot_name}')
-            table = load_conversation_web_scrape_memory(results)
-            return table
+            return load_conversation_web_scrape_memory(results)
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
         
 
 def fail():
-  #  print('')
-    fail = "Not Needed"
-    return fail
+    return "Not Needed"
     
     
 def google_search(query, my_api_key, my_cse_id, **kwargs):
-  params = {
-    "key": my_api_key,
-    "cx": my_cse_id,
-    "q": query,
-    "num": 7,
-    "snippet": True
-  }
-  response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
-  if response.status_code == 200:
+    params = {
+      "key": my_api_key,
+      "cx": my_cse_id,
+      "q": query,
+      "num": 7,
+      "snippet": True
+    }
+    response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
+    if response.status_code != 200:
+        raise Exception(f"Request failed with status code {response.status_code}")
     data = response.json()
-    urls = [item['link'] for item in data.get("items", [])]  # Return a list of URLs
-    return urls
-  else:
-    raise Exception(f"Request failed with status code {response.status_code}")
+    return [item['link'] for item in data.get("items", [])]
        
         
 def split_into_chunks(text, chunk_size):
@@ -1359,11 +1338,18 @@ def chunk_text_from_url(url, chunk_size=500, overlap=80, results_callback=None):
         texttemp = texttemp.replace('\n', '').replace('\r', '')
         texttemp = '\n'.join(line for line in texttemp.splitlines() if line.strip())
         chunks = chunk_text(texttemp, chunk_size, overlap)
-        weblist = list()
+        weblist = []
         for chunk in chunks:
-            websum = list()
-            websum.append({'role': 'system', 'content': "MAIN SYSTEM PROMPT: You are an ai text editor.  Your job is to take the given text from a webscrape, then return the scraped text in an informational article form.  Do not generalize, rephrase, or use latent knowledge in your summary.  If no article is given, print no article.\n\n\n"})
-            websum.append({'role': 'user', 'content': f"WEBSCRAPE: {chunk}\n\nINSTRUCTIONS: Summarize the webscrape without losing any factual knowledge and maintaining full context. The truncated article will be directly uploaded to a Database, leave out extraneous text and personal statements.[/INST]\n\nASSISTANT: Sure! Here's the summary of the webscrape:"})
+            websum = [
+                {
+                    'role': 'system',
+                    'content': "MAIN SYSTEM PROMPT: You are an ai text editor.  Your job is to take the given text from a webscrape, then return the scraped text in an informational article form.  Do not generalize, rephrase, or use latent knowledge in your summary.  If no article is given, print no article.\n\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"WEBSCRAPE: {chunk}\n\nINSTRUCTIONS: Summarize the webscrape without losing any factual knowledge and maintaining full context. The truncated article will be directly uploaded to a Database, leave out extraneous text and personal statements.[/INST]\n\nASSISTANT: Sure! Here's the summary of the webscrape:",
+                },
+            ]
             prompt = ''.join([message_dict['content'] for message_dict in websum])
             text = oobabooga_scrape(prompt)
             if len(text) < 20:
@@ -1371,71 +1357,84 @@ def chunk_text_from_url(url, chunk_size=500, overlap=80, results_callback=None):
         #    text = chatgpt35_completion(websum)
         #    paragraphs = text.split('\n\n')  # Split into paragraphs
         #    for paragraph in paragraphs:  # Process each paragraph individually, add a check to see if paragraph contained actual information.
-            webcheck = list()
-            webcheck.append({'role': 'system', 'content': f"MAIN SYSTEM PROMPT: You are an agent for an automated webscraping tool. Your task is to decide if the previous Ai Agent scraped the text successfully. The scraped text should contain some form of article, if it does, print 'YES'. If the article was scraped successfully, print: 'YES'.  If the webscrape failed or is a response from the first agent, print: 'NO'.\n\n"})
-            webcheck.append({'role': 'user', 'content': f"ORIGINAL TEXT FROM SCRAPE: {chunk}\n\n"})
-            webcheck.append({'role': 'user', 'content': f"PROCESSED WEBSCRAPE: {text}\n\n"})
-            webcheck.append({'role': 'user', 'content': f"SYSTEM: You are responding for a Yes or No input field. You are only capible of printing Yes or No. Use the format: [AI AGENT: <'Yes'/'No'>][/INST]\n\nASSISTANT:"})
-       
-            
+            webcheck = [
+                {
+                    'role': 'system',
+                    'content': f"MAIN SYSTEM PROMPT: You are an agent for an automated webscraping tool. Your task is to decide if the previous Ai Agent scraped the text successfully. The scraped text should contain some form of article, if it does, print 'YES'. If the article was scraped successfully, print: 'YES'.  If the webscrape failed or is a response from the first agent, print: 'NO'.\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"ORIGINAL TEXT FROM SCRAPE: {chunk}\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"PROCESSED WEBSCRAPE: {text}\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"SYSTEM: You are responding for a Yes or No input field. You are only capible of printing Yes or No. Use the format: [AI AGENT: <'Yes'/'No'>][/INST]\n\nASSISTANT:",
+                },
+            ]
             prompt = ''.join([message_dict['content'] for message_dict in webcheck])
             webyescheck = oobabooga_selector(prompt)
-            
+
             if 'no webscrape' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'no article' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'you are a text' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'no summary' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass  
             if 'i am an ai' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass                
+            elif 'yes' in webyescheck.lower():
+                semanticterm = [
+                    {
+                        'role': 'system',
+                        'content': f"MAIN SYSTEM PROMPT: You are a bot responsible for taging articles with a title for database queries.  Your job is to read the given text, then create a title in question form representative of what the article is about.  The title should be semantically identical to the overview of the article and not include extraneous info. Use the format: [<TITLE IN QUESTION FORM>].\n\n",
+                    },
+                    {'role': 'user', 'content': f"ARTICLE: {text}\n\n"},
+                    {
+                        'role': 'user',
+                        'content': f"SYSTEM: Create a short, single question that encapsulates the semantic meaning of the Article.  Use the format: [<QUESTION TITLE>].  Please only print the title, it will be directly input in front of the article.[/INST]\n\nASSISTANT: Sure! Here's the summary of the webscrape:",
+                    },
+                ]
+                prompt = ''.join([message_dict['content'] for message_dict in semanticterm])
+                semantic_db_term = oobabooga_scrape(prompt)
+                print('---------')
+                weblist.append(f'{url} {text}')
+                print(url + '\n' + semantic_db_term + '\n' + text)
+                if results_callback is not None:
+                    results_callback(f'{url} {text}')
+                vector = model.encode([f'{url} {semantic_db_term} {text}']).tolist()
+                timestamp = time()
+                timestring = timestamp_to_datetime(timestamp)
+                unique_id = str(uuid4())
+                metadata = {
+                    'bot': bot_name,
+                    'time': timestamp,
+                    'message': f'{url} {text}',
+                    'timestring': timestring,
+                    'uuid': unique_id,
+                    "memory_type": "web_scrape",
+                }
+                save_json(f'nexus/{bot_name}/{username}/web_scrape_memory_nexus/%s.json' % unique_id, metadata)
+                payload = [(unique_id, vector, {"memory_type": "web_scrape"})]
+                vdb.upsert(payload, namespace=f'Tools_User_{username}_Bot_{bot_name}')
+                payload.clear()
             else:
-                if 'yes' in webyescheck.lower():
-                    semanticterm = list()
-                    semanticterm.append({'role': 'system', 'content': f"MAIN SYSTEM PROMPT: You are a bot responsible for taging articles with a title for database queries.  Your job is to read the given text, then create a title in question form representative of what the article is about.  The title should be semantically identical to the overview of the article and not include extraneous info. Use the format: [<TITLE IN QUESTION FORM>].\n\n"})
-                    semanticterm.append({'role': 'user', 'content': f"ARTICLE: {text}\n\n"})
-                    semanticterm.append({'role': 'user', 'content': f"SYSTEM: Create a short, single question that encapsulates the semantic meaning of the Article.  Use the format: [<QUESTION TITLE>].  Please only print the title, it will be directly input in front of the article.[/INST]\n\nASSISTANT: Sure! Here's the summary of the webscrape:"})
-                    prompt = ''.join([message_dict['content'] for message_dict in semanticterm])
-                    semantic_db_term = oobabooga_scrape(prompt)
-                    print('---------')
-                    weblist.append(url + ' ' + text)
-                    print(url + '\n' + semantic_db_term + '\n' + text)
-                    if results_callback is not None:
-                        results_callback(url + ' ' + text)
-                    payload = list()
-                    vector = model.encode([url + ' ' + semantic_db_term + ' ' + text]).tolist()
-                    timestamp = time()
-                    timestring = timestamp_to_datetime(timestamp)
-                    unique_id = str(uuid4())
-                    metadata = {'bot': bot_name, 'time': timestamp, 'message': url + ' ' + text,
-                                'timestring': timestring, 'uuid': unique_id, "memory_type": "web_scrape"}
-                    save_json(f'nexus/{bot_name}/{username}/web_scrape_memory_nexus/%s.json' % unique_id, metadata)
-                    payload.append((unique_id, vector, {"memory_type": "web_scrape"}))
-                    vdb.upsert(payload, namespace=f'Tools_User_{username}_Bot_{bot_name}')
-                    payload.clear()           
-                    pass  
-                else:
-                    print('---------')
-                    print(f'\n\n\nERROR MESSAGE FROM BOT: {webyescheck}\n\n\n')                          
-        table = weblist
-        
-        return table
+                print('---------')
+                print(f'\n\n\nERROR MESSAGE FROM BOT: {webyescheck}\n\n\n')
+        return weblist
     except Exception as e:
         print(e)
-        table = "Error"
-        return table  
+        return "Error"  
         
         
 def search_and_chunk(query, my_api_key, my_cse_id, **kwargs):
@@ -1457,21 +1456,21 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
     conv_length = 4
     m = multiprocessing.Manager()
     lock = m.Lock()
-    tasklist = list()
-    conversation = list()
-    int_conversation = list()
-    conversation2 = list()
-    summary = list()
-    auto = list()
-    payload = list()
-    consolidation  = list()
-    tasklist_completion = list()
-    master_tasklist = list()
-    tasklist = list()
-    tasklist_log = list()
-    memcheck = list()
-    memcheck2 = list()
-    webcheck = list()
+    tasklist = []
+    conversation = []
+    int_conversation = []
+    conversation2 = []
+    summary = []
+    auto = []
+    payload = []
+    consolidation = []
+    tasklist_completion = []
+    master_tasklist = []
+    tasklist = []
+    tasklist_log = []
+    memcheck = []
+    memcheck2 = []
+    webcheck = []
     counter = 0
     counter2 = 0
     mem_counter = 0
@@ -1498,8 +1497,8 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
         os.makedirs(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
-    if not os.path.exists(f'nexus/global_heuristics_nexus'):
-        os.makedirs(f'nexus/global_heuristics_nexus')
+    if not os.path.exists('nexus/global_heuristics_nexus'):
+        os.makedirs('nexus/global_heuristics_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     if not os.path.exists(f'logs/{bot_name}/{username}/complete_chat_logs'):
@@ -1518,16 +1517,15 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
         # # Start or Continue Conversation based on if response exists
-        conversation.append({'role': 'system', 'content': '%s' % main_prompt})
-        int_conversation.append({'role': 'system', 'content': '%s' % main_prompt})
+        conversation.append({'role': 'system', 'content': f'{main_prompt}'})
+        int_conversation.append({'role': 'system', 'content': f'{main_prompt}'})
         if 'response_two' in locals():
             conversation.append({'role': 'user', 'content': a})
             if counter % conv_length == 0:
                 print("\nConversation is continued, type [Exit] to clear conversation list.")
-                conversation.append({'role': 'assistant', 'content': "%s" % response_two})
-            pass
+                conversation.append({'role': 'assistant', 'content': f"{response_two}"})
         else:
-            conversation.append({'role': 'assistant', 'content': "%s" % greeting_msg})
+            conversation.append({'role': 'assistant', 'content': f"{greeting_msg}"})
             print("\n%s" % greeting_msg)
         if query == 'Clear Memory':
             while True:
@@ -1540,11 +1538,9 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Webscrape delete cancelled.')
                     return
-        
+
         # # Check for "Exit"
-        if query == 'Skip':   
-            pass
-        else:
+        if query != 'Skip':
             urls = urls = chunk_text_from_url(query)
         print('---------')
         return

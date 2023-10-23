@@ -28,7 +28,7 @@ from sentence_transformers import SentenceTransformer
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -40,7 +40,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -52,7 +52,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -64,7 +64,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -76,7 +76,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -88,7 +88,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -100,7 +100,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -112,7 +112,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -123,14 +123,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 openai.api_key = open_file('api_keys/key_openai.txt')
 
@@ -205,12 +203,10 @@ def search_episodic_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "episodic", "user": username}, top_k=5, namespace=f'{bot_name}')
-            memories = load_conversation_episodic_memory(results)
-            return memories
+            return load_conversation_episodic_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories
+        return "Error"
             
     
 def search_flashbulb_db(line_vec):
@@ -223,12 +219,10 @@ def search_flashbulb_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "flashbulb", "user": username}, top_k=5, namespace=f'{bot_name}')
-            memories = load_conversation_flashbulb_memory(results)
-            return memories
+            return load_conversation_flashbulb_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories 
+        return "Error" 
     
     
 def search_explicit_db(line_vec):
@@ -257,7 +251,7 @@ def load_conversation_web_scrape_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
     try:
-        result = list()
+        result = []
         for m in results['matches']:
             info = load_json(f'nexus/{bot_name}/{username}/web_scrape_memory_nexus/%s.json' % m['id'])
             result.append(info)
@@ -266,8 +260,7 @@ def load_conversation_web_scrape_memory(results):
         return '\n'.join(messages).strip()
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
     
     
 def search_webscrape_db(line):
@@ -279,37 +272,31 @@ def search_webscrape_db(line):
     try:
         with lock:
             line_vec = model.encode([line]).tolist()
-            results = vdb.query(vector=line_vec, filter={
-        "memory_type": "web_scrape"}, top_k=30, namespace=f'Tools_User_{username}_Bot_{bot_name}')
-            table = load_conversation_web_scrape_memory(results)
-            return table
+                results = vdb.query(vector=line_vec, filter={
+            "memory_type": "web_scrape"}, top_k=30, namespace=f'Tools_User_{username}_Bot_{bot_name}')
+            return load_conversation_web_scrape_memory(results)
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
         
 
 def fail():
-  #  print('')
-    fail = "Not Needed"
-    return fail
+    return "Not Needed"
     
     
 def google_search(query, my_api_key, my_cse_id, **kwargs):
-  params = {
-    "key": my_api_key,
-    "cx": my_cse_id,
-    "q": query,
-    "num": 7,
-    "snippet": True
-  }
-  response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
-  if response.status_code == 200:
+    params = {
+      "key": my_api_key,
+      "cx": my_cse_id,
+      "q": query,
+      "num": 7,
+      "snippet": True
+    }
+    response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
+    if response.status_code != 200:
+        raise Exception(f"Request failed with status code {response.status_code}")
     data = response.json()
-    urls = [item['link'] for item in data.get("items", [])]  # Return a list of URLs
-    return urls
-  else:
-    raise Exception(f"Request failed with status code {response.status_code}")
+    return [item['link'] for item in data.get("items", [])]
        
         
 def split_into_chunks(text, chunk_size):
@@ -343,41 +330,55 @@ def chunk_text_from_url(url, chunk_size=800, overlap=100, results_callback=None)
         texttemp = texttemp.replace('\n', '').replace('\r', '')
         texttemp = '\n'.join(line for line in texttemp.splitlines() if line.strip())
         chunks = chunk_text(texttemp, chunk_size, overlap)
-        weblist = list()
+        weblist = []
         for chunk in chunks:
-            websum = list()
-            websum.append({'role': 'system', 'content': "You are a data extractor. Your job is to take the given text from a webscrape, then highlight important or factual information. After useless data has been removed, you will then return all salient information.  Only use given info, do not generalize.  Use the format: [-{Semantic Tag}: {Article/Guide}]. Avoid using linebreaks inside of the article.  Lists should be made into continuous text form to avoid them."})
-            websum.append({'role': 'user', 'content': f"ARTICLE CHUNK: {chunk}"})
+            websum = [
+                {
+                    'role': 'system',
+                    'content': "You are a data extractor. Your job is to take the given text from a webscrape, then highlight important or factual information. After useless data has been removed, you will then return all salient information.  Only use given info, do not generalize.  Use the format: [-{Semantic Tag}: {Article/Guide}]. Avoid using linebreaks inside of the article.  Lists should be made into continuous text form to avoid them.",
+                },
+                {'role': 'user', 'content': f"ARTICLE CHUNK: {chunk}"},
+            ]
             text = chatgpt35_completion(websum)
             paragraphs = text.split('\n\n')  # Split into paragraphs
             for paragraph in paragraphs:  # Process each paragraph individually, add a check to see if paragraph contained actual information.
-                webcheck = list()
-                weblist.append(url + ' ' + paragraph)
-                webcheck.append({'role': 'system', 'content': f"You are an agent for an automated webscraping tool. You are one of many agents in a chain. Your task is to decide if the given text from a webscrape was scraped successfully. The scraped text should contain factual data or opinions. If the given data consists of an error message or advertisements, skip it.  If the article was scraped successfully, print: YES.  If a web-search is not needed, print: NO."})
-                webcheck.append({'role': 'user', 'content': f"Is the scraped information useful to an end-user? YES/NO: {paragraph}"})
+                weblist.append(f'{url} {paragraph}')
+                webcheck = [
+                    {
+                        'role': 'system',
+                        'content': "You are an agent for an automated webscraping tool. You are one of many agents in a chain. Your task is to decide if the given text from a webscrape was scraped successfully. The scraped text should contain factual data or opinions. If the given data consists of an error message or advertisements, skip it.  If the article was scraped successfully, print: YES.  If a web-search is not needed, print: NO.",
+                    },
+                    {
+                        'role': 'user',
+                        'content': f"Is the scraped information useful to an end-user? YES/NO: {paragraph}",
+                    },
+                ]
                 webyescheck = chatgptyesno_completion(webcheck)
                 if webyescheck == 'YES':
                     print('---------')
-                    print(url + ' ' + paragraph)
+                    print(f'{url} {paragraph}')
                     if results_callback is not None:
-                        results_callback(url + ' ' + paragraph)
-                    payload = list()
-                    vector = model.encode([url + ' ' + paragraph]).tolist()
+                        results_callback(f'{url} {paragraph}')
+                    vector = model.encode([f'{url} {paragraph}']).tolist()
                     timestamp = time()
                     timestring = timestamp_to_datetime(timestamp)
                     unique_id = str(uuid4())
-                    metadata = {'bot': bot_name, 'time': timestamp, 'message': url + ' ' + paragraph,
-                                'timestring': timestring, 'uuid': unique_id, "memory_type": "web_scrape"}
+                    metadata = {
+                        'bot': bot_name,
+                        'time': timestamp,
+                        'message': f'{url} {paragraph}',
+                        'timestring': timestring,
+                        'uuid': unique_id,
+                        "memory_type": "web_scrape",
+                    }
                     save_json(f'nexus/{bot_name}/{username}/web_scrape_memory_nexus/%s.json' % unique_id, metadata)
-                    payload.append((unique_id, vector, {"memory_type": "web_scrape"}))
+                    payload = [(unique_id, vector, {"memory_type": "web_scrape"})]
                     vdb.upsert(payload, namespace=f'Tools_User_{username}_Bot_{bot_name}')
                     payload.clear()
-        table = weblist
-        return table
+        return weblist
     except Exception as e:
         print(e)
-        table = "Error"
-        return table  
+        return "Error"  
         
         
 def search_and_chunk(query, my_api_key, my_cse_id, **kwargs):
@@ -399,21 +400,21 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
     conv_length = 4
     m = multiprocessing.Manager()
     lock = m.Lock()
-    tasklist = list()
-    conversation = list()
-    int_conversation = list()
-    conversation2 = list()
-    summary = list()
-    auto = list()
-    payload = list()
-    consolidation  = list()
-    tasklist_completion = list()
-    master_tasklist = list()
-    tasklist = list()
-    tasklist_log = list()
-    memcheck = list()
-    memcheck2 = list()
-    webcheck = list()
+    tasklist = []
+    conversation = []
+    int_conversation = []
+    conversation2 = []
+    summary = []
+    auto = []
+    payload = []
+    consolidation = []
+    tasklist_completion = []
+    master_tasklist = []
+    tasklist = []
+    tasklist_log = []
+    memcheck = []
+    memcheck2 = []
+    webcheck = []
     counter = 0
     counter2 = 0
     mem_counter = 0
@@ -440,8 +441,8 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
         os.makedirs(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
-    if not os.path.exists(f'nexus/global_heuristics_nexus'):
-        os.makedirs(f'nexus/global_heuristics_nexus')
+    if not os.path.exists('nexus/global_heuristics_nexus'):
+        os.makedirs('nexus/global_heuristics_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     if not os.path.exists(f'logs/{bot_name}/{username}/complete_chat_logs'):
@@ -460,16 +461,15 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
         # # Start or Continue Conversation based on if response exists
-        conversation.append({'role': 'system', 'content': '%s' % main_prompt})
-        int_conversation.append({'role': 'system', 'content': '%s' % main_prompt})
+        conversation.append({'role': 'system', 'content': f'{main_prompt}'})
+        int_conversation.append({'role': 'system', 'content': f'{main_prompt}'})
         if 'response_two' in locals():
             conversation.append({'role': 'user', 'content': a})
             if counter % conv_length == 0:
                 print("\nConversation is continued, type [Exit] to clear conversation list.")
-                conversation.append({'role': 'assistant', 'content': "%s" % response_two})
-            pass
+                conversation.append({'role': 'assistant', 'content': f"{response_two}"})
         else:
-            conversation.append({'role': 'assistant', 'content': "%s" % greeting_msg})
+            conversation.append({'role': 'assistant', 'content': f"{greeting_msg}"})
             print("\n%s" % greeting_msg)
         if query == 'Clear Memory':
             while True:
@@ -482,11 +482,9 @@ def GPT_4_Tasklist_Web_Scrape(query, results_callback):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Webscrape delete cancelled.')
                     return
-        
+
         # # Check for "Exit"
-        if query == 'Skip':   
-            pass
-        else:
+        if query != 'Skip':
             urls = urls = chunk_text_from_url(query)
         print('---------')
         return
@@ -496,14 +494,13 @@ def GPT_4_Tasklist_Web_Search(query, results_callback):
     vdb = pinecone.Index("aetherius")
     my_api_key = open_file('api_keys/key_google.txt')
     my_cse_id = open_file('api_keys/key_google_cse.txt')
-        # # Number of Messages before conversation is summarized, higher number, higher api cost. Change to 3 when using GPT 3.5 due to token usage.
     conv_length = 4
     m = multiprocessing.Manager()
     lock = m.Lock()
-    conversation = list()
-    int_conversation = list()
-    payload = list()
-    master_tasklist = list()
+    conversation = []
+    int_conversation = []
+    payload = []
+    master_tasklist = []
     counter = 0
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
@@ -529,8 +526,8 @@ def GPT_4_Tasklist_Web_Search(query, results_callback):
         os.makedirs(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
-    if not os.path.exists(f'nexus/global_heuristics_nexus'):
-        os.makedirs(f'nexus/global_heuristics_nexus')
+    if not os.path.exists('nexus/global_heuristics_nexus'):
+        os.makedirs('nexus/global_heuristics_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     if not os.path.exists(f'logs/{bot_name}/{username}/complete_chat_logs'):
@@ -543,22 +540,19 @@ def GPT_4_Tasklist_Web_Search(query, results_callback):
         os.makedirs(f'logs/{bot_name}/{username}/intuition_logs')
     if not os.path.exists(f'history/{username}'):
         os.makedirs(f'history/{username}')
-     #   r = sr.Recognizer()
     while True:
             # # Get Timestamp
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
-            # # Start or Continue Conversation based on if response exists
-        conversation.append({'role': 'system', 'content': '%s' % main_prompt})
-        int_conversation.append({'role': 'system', 'content': '%s' % main_prompt})
+        conversation.append({'role': 'system', 'content': f'{main_prompt}'})
+        int_conversation.append({'role': 'system', 'content': f'{main_prompt}'})
         if 'response_two' in locals():
             conversation.append({'role': 'user', 'content': a})
             if counter % conv_length == 0:
                 print("\nConversation is continued, type [Exit] to clear conversation list.")
-                conversation.append({'role': 'assistant', 'content': "%s" % response_two})
-            pass
+                conversation.append({'role': 'assistant', 'content': f"{response_two}"})
         else:
-            conversation.append({'role': 'assistant', 'content': "%s" % greeting_msg})
+            conversation.append({'role': 'assistant', 'content': f"{greeting_msg}"})
             print("\n%s" % greeting_msg)
         print('\nType [Clear Memory] to clear webscrape memory. (Not Enabled)')
         print("\nType [Skip] to skip url input.")
@@ -574,11 +568,9 @@ def GPT_4_Tasklist_Web_Search(query, results_callback):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Webscrape delete cancelled.')
                     return
-            
+
             # # Check for "Exit"
-        if query == 'Skip':   
-            pass
-        else:
+        if query != 'Skip':
             urls = google_search(query, my_api_key, my_cse_id)
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 executor.map(chunk_text_from_url, urls)
@@ -605,11 +597,12 @@ class MainConversation:
             
     def append(self, timestring, username, a, bot_name, output_one, output_two, response_two):
         # Append new entry to the running conversation
-        entry = []
-        entry.append(f"[{timestring}] {username}: {a}")
-        entry.append(f"{bot_name}'s Inner Monologue: {output_one}\n")
-        entry.append(f"Intuition: {output_two}\n")
-        entry.append(f"Response: {response_two}\n")
+        entry = [
+            f"[{timestring}] {username}: {a}",
+            f"{bot_name}'s Inner Monologue: {output_one}\n",
+            f"Intuition: {output_two}\n",
+            f"Response: {response_two}\n",
+        ]
         self.running_conversation.append(entry)
         # Remove oldest entry if conversation length exceeds max entries
         while len(self.running_conversation) > self.max_entries:
@@ -676,8 +669,9 @@ class ChatBotApplication(tk.Frame):
         
         
     def choose_bot_name(self):
-        bot_name = simpledialog.askstring("Choose Bot Name", "Type a Bot Name:")
-        if bot_name:
+        if bot_name := simpledialog.askstring(
+            "Choose Bot Name", "Type a Bot Name:"
+        ):
             file_path = "./config/prompt_bot_name.txt"
             with open(file_path, 'w') as file:
                 file.write(bot_name)
@@ -686,17 +680,17 @@ class ChatBotApplication(tk.Frame):
         
 
     def choose_username(self):
-        username = simpledialog.askstring("Choose Username", "Type a Username:")
-        if username:
+        if username := simpledialog.askstring(
+            "Choose Username", "Type a Username:"
+        ):
             file_path = "./config/prompt_username.txt"
             with open(file_path, 'w') as file:
                 file.write(username)
             self.conversation_text.delete("1.0", tk.END)
             self.display_conversation_history()
-        pass
         
     def update_results(self, text_widget, url, paragraph):
-        self.after(0, text_widget.insert, tk.END, url + ' ' + paragraph)
+        self.after(0, text_widget.insert, tk.END, f'{url} {paragraph}')
         self.update()
         
         
@@ -987,7 +981,6 @@ class ChatBotApplication(tk.Frame):
             OpenAi_Local_Embed_Aether_Search()
         except:
             print("Fail")
-            pass
         
         
     def create_widgets(self):

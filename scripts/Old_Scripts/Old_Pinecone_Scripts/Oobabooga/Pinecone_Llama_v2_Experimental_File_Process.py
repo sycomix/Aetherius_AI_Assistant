@@ -38,7 +38,7 @@ import subprocess
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -50,7 +50,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -62,7 +62,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -74,7 +74,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -86,7 +86,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -98,7 +98,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -110,7 +110,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -122,7 +122,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -133,14 +133,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
 vdb = pinecone.Index("aetherius")
@@ -580,24 +578,21 @@ def oobabooga_consolidationmem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.85,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -611,13 +606,12 @@ def oobabooga_consolidationmem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -639,24 +633,21 @@ def oobabooga_associativemem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.7,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -670,13 +661,12 @@ def oobabooga_associativemem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -1230,12 +1220,10 @@ def search_episodic_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "episodic", "user": username}, top_k=5, namespace=f'{bot_name}')
-            memories = load_conversation_episodic_memory(results)
-            return memories
+            return load_conversation_episodic_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories
+        return "Error"
             
     
 def search_flashbulb_db(line_vec):
@@ -1248,12 +1236,10 @@ def search_flashbulb_db(line_vec):
         with lock:
             results = vdb.query(vector=line_vec, filter={
             "memory_type": "flashbulb", "user": username}, top_k=2, namespace=f'{bot_name}')
-            memories = load_conversation_flashbulb_memory(results)
-            return memories
+            return load_conversation_flashbulb_memory(results)
     except Exception as e:
         print(e)
-        memories = "Error"
-        return memories 
+        return "Error" 
     
     
 def search_explicit_db(line_vec):
@@ -1296,8 +1282,7 @@ def chunk_text(text, chunk_size, overlap):
     
 def open_image_file(image_path):
     try:
-        img = Image.open(image_path)
-        return img
+        return Image.open(image_path)
     except IOError:
         print("Error: File not found or the file format is not supported.")
         return None
@@ -1318,7 +1303,7 @@ def chunk_text_from_file(file_path, chunk_size=600, overlap=80):
         vdb = pinecone.Index("aetherius")
         pytesseract.pytesseract.tesseract_cmd = '.\\Tesseract-ocr\\tesseract.exe'
         textemp = None
-        file_extension = os.path.splitext(file_path)[1].lower() 
+        file_extension = os.path.splitext(file_path)[1].lower()
         if file_extension == '.txt':
             with open(file_path, 'r') as file:
                 texttemp = file.read().replace('\n', ' ').replace('\r', '')
@@ -1338,20 +1323,28 @@ def chunk_text_from_file(file_path, chunk_size=600, overlap=80):
             if image is not None:
                 texttemp = pytesseract.image_to_string(image).replace('\n', ' ').replace('\r', '')
                 # Save OCR output to raw text file
-                save_path = './Upload/SCANS/Finished/Raw/' + os.path.basename(file_path) + '.txt'
+                save_path = f'./Upload/SCANS/Finished/Raw/{os.path.basename(file_path)}.txt'
                 save_text_to_file(texttemp, save_path)
         else:
             print(f"Unsupported file type: {file_extension}")
             return []
         texttemp = '\n'.join(line for line in texttemp.splitlines() if line.strip())
         chunks = chunk_text(texttemp, chunk_size, overlap)
-        filelist = list()
+        filelist = []
         for chunk in chunks:
-            filesum = list()
-            filesum.append({'role': 'system', 'content': "You are a Data Summarizer sub-module, responsible for processing text data from files. Your role includes identifying and highlighting significant or factual information. Extraneous data should be discarded, and only essential details must be returned. Stick to the data provided; do not infer or generalize.  Convert lists into a continuous text summary to maintain this format. Present your responses in a Running Text format using the following pattern: [SEMANTIC QUESTION TAG:SUMMARY]. Note that the semantic question tag should be a question that corresponds to the paired information within the summary. Always provide the two together without linebreaks."})
-            filesum.append({'role': 'user', 'content': f"TEXT CHUNK: {chunk}"})
-            filesum = list()
-            filesum.append({'role': 'system', 'content': "MAIN SYSTEM PROMPT: You are an ai text editor.  Your job is to take the given text from a file, then return the scraped text in an informational article form.  Do not generalize, rephrase, or use latent knowledge in your summary.  If no article is given, print no article.\n\n\n"})
+            filesum = [
+                {
+                    'role': 'system',
+                    'content': "You are a Data Summarizer sub-module, responsible for processing text data from files. Your role includes identifying and highlighting significant or factual information. Extraneous data should be discarded, and only essential details must be returned. Stick to the data provided; do not infer or generalize.  Convert lists into a continuous text summary to maintain this format. Present your responses in a Running Text format using the following pattern: [SEMANTIC QUESTION TAG:SUMMARY]. Note that the semantic question tag should be a question that corresponds to the paired information within the summary. Always provide the two together without linebreaks.",
+                },
+                {'role': 'user', 'content': f"TEXT CHUNK: {chunk}"},
+            ]
+            filesum = [
+                {
+                    'role': 'system',
+                    'content': "MAIN SYSTEM PROMPT: You are an ai text editor.  Your job is to take the given text from a file, then return the scraped text in an informational article form.  Do not generalize, rephrase, or use latent knowledge in your summary.  If no article is given, print no article.\n\n\n",
+                }
+            ]
             filesum.append({'role': 'user', 'content': f"FILE TEXT: {chunk}\n\nINSTRUCTIONS: Summarize the text scrape without losing any factual knowledge and maintaining full context. The truncated article will be directly uploaded to a Database, leave out extraneous text and personal statements.[/INST]\n\nASSISTANT: Sure! Here's the summary of the file:"})
             prompt = ''.join([message_dict['content'] for message_dict in filesum])
             text = oobabooga_scrape(prompt)
@@ -1359,74 +1352,95 @@ def chunk_text_from_file(file_path, chunk_size=600, overlap=80):
                 text = "No File available"
             paragraphs = text.split('\n\n')  # Split into paragraphs
             for paragraph in paragraphs:  # Process each paragraph individually, add a check to see if paragraph contained actual information.
-                filecheck = list()
-                filelist.append(file_path + ' ' + paragraph)
-                filecheck.append({'role': 'system', 'content': f"You are an agent for an automated text-processing tool. You are one of many agents in a chain. Your task is to decide if the given text from a file was processed successfully. The processed text should contain factual data or opinions. If the given data only consists of an error message or a single question, skip it.  If the article was processed successfully, print: YES.  If a file-process is not needed, print: NO."})
-                filecheck.append({'role': 'user', 'content': f"Is the processed information useful to an end-user? YES/NO: {paragraph}"})
-                
-            filecheck = list()
-            filecheck.append({'role': 'system', 'content': f"MAIN SYSTEM PROMPT: You are an agent for an automated text scraping tool. Your task is to decide if the previous Ai Agent scraped the text successfully. The scraped text should contain some form of article, if it does, print 'YES'. If the article was scraped successfully, print: 'YES'.  If the text scrape failed or is a response from the first agent, print: 'NO'.\n\n"})
-            filecheck.append({'role': 'user', 'content': f"ORIGINAL TEXT FROM SCRAPE: {chunk}\n\n"})
-            filecheck.append({'role': 'user', 'content': f"PROCESSED FILE TEXT: {text}\n\n"})
-            filecheck.append({'role': 'user', 'content': f"SYSTEM: You are responding for a Yes or No input field. You are only capible of printing Yes or No. Use the format: [AI AGENT: <'Yes'/'No'>][/INST]\n\nASSISTANT:"})
+                filelist.append(f'{file_path} {paragraph}')
+                filecheck = [
+                    {
+                        'role': 'system',
+                        'content': "You are an agent for an automated text-processing tool. You are one of many agents in a chain. Your task is to decide if the given text from a file was processed successfully. The processed text should contain factual data or opinions. If the given data only consists of an error message or a single question, skip it.  If the article was processed successfully, print: YES.  If a file-process is not needed, print: NO.",
+                    },
+                    {
+                        'role': 'user',
+                        'content': f"Is the processed information useful to an end-user? YES/NO: {paragraph}",
+                    },
+                ]
+            filecheck = [
+                {
+                    'role': 'system',
+                    'content': f"MAIN SYSTEM PROMPT: You are an agent for an automated text scraping tool. Your task is to decide if the previous Ai Agent scraped the text successfully. The scraped text should contain some form of article, if it does, print 'YES'. If the article was scraped successfully, print: 'YES'.  If the text scrape failed or is a response from the first agent, print: 'NO'.\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"ORIGINAL TEXT FROM SCRAPE: {chunk}\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"PROCESSED FILE TEXT: {text}\n\n",
+                },
+                {
+                    'role': 'user',
+                    'content': f"SYSTEM: You are responding for a Yes or No input field. You are only capible of printing Yes or No. Use the format: [AI AGENT: <'Yes'/'No'>][/INST]\n\nASSISTANT:",
+                },
+            ]
             prompt = ''.join([message_dict['content'] for message_dict in filecheck])
             fileyescheck = oobabooga_selector(prompt)
-            
+
             if 'no file' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'no article' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'you are a text' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass
             if 'no summary' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass  
             if 'i am an ai' in text.lower():
                 print('---------')
                 print('Summarization Failed')
-                pass                
+            elif 'yes' in fileyescheck.lower():
+                semanticterm = [
+                    {
+                        'role': 'system',
+                        'content': f"MAIN SYSTEM PROMPT: You are a bot responsible for taging articles with a title for database queries.  Your job is to read the given text, then create a title in question form representative of what the article is about.  The title should be semantically identical to the overview of the article and not include extraneous info. Use the format: [<TITLE IN QUESTION FORM>].\n\n",
+                    },
+                    {'role': 'user', 'content': f"ARTICLE: {text}\n\n"},
+                    {
+                        'role': 'user',
+                        'content': f"SYSTEM: Create a short, single question that encapsulates the semantic meaning of the Article.  Use the format: [<QUESTION TITLE>].  Please only print the title, it will be directly input in front of the article.[/INST]\n\nASSISTANT: Sure! Here's the summary of the given article:",
+                    },
+                ]
+                prompt = ''.join([message_dict['content'] for message_dict in semanticterm])
+                semantic_db_term = oobabooga_scrape(prompt)
+
+                print('---------')
+                filelist.append(f'{file_path} {paragraph}')
+                print(f'{file_path} {paragraph}')
+                vector = model.encode([f'{file_path} {paragraph}']).tolist()
+                timestamp = time()
+                timestring = timestamp_to_datetime(timestamp)
+                unique_id = str(uuid4())
+                metadata = {
+                    'bot': bot_name,
+                    'time': timestamp,
+                    'message': f'{file_path} {paragraph}',
+                    'timestring': timestring,
+                    'uuid': unique_id,
+                    "memory_type": "file_process",
+                }
+                save_json(f'nexus/file_process_memory_nexus/{unique_id}.json', metadata)
+                payload = [(unique_id, vector, {"memory_type": "file_process"})]
+                vdb.upsert(payload, namespace=f'Tools_User_{username}_Bot_{bot_name}')
+                payload.clear()
+                filecheck.clear()
             else:
-                if 'yes' in fileyescheck.lower():
-                    semanticterm = list()
-                    semanticterm.append({'role': 'system', 'content': f"MAIN SYSTEM PROMPT: You are a bot responsible for taging articles with a title for database queries.  Your job is to read the given text, then create a title in question form representative of what the article is about.  The title should be semantically identical to the overview of the article and not include extraneous info. Use the format: [<TITLE IN QUESTION FORM>].\n\n"})
-                    semanticterm.append({'role': 'user', 'content': f"ARTICLE: {text}\n\n"})
-                    semanticterm.append({'role': 'user', 'content': f"SYSTEM: Create a short, single question that encapsulates the semantic meaning of the Article.  Use the format: [<QUESTION TITLE>].  Please only print the title, it will be directly input in front of the article.[/INST]\n\nASSISTANT: Sure! Here's the summary of the given article:"})
-                    prompt = ''.join([message_dict['content'] for message_dict in semanticterm])
-                    semantic_db_term = oobabooga_scrape(prompt)
-            
-                    print('---------')
-                    filelist.append(file_path + ' ' + paragraph)
-                    print(file_path + ' ' + paragraph)
-                    payload = list()
-                    vector = model.encode([file_path + ' ' + paragraph]).tolist()
-                    timestamp = time()
-                    timestring = timestamp_to_datetime(timestamp)
-                    unique_id = str(uuid4())
-                    metadata = {'bot': bot_name, 'time': timestamp, 'message': file_path + ' ' + paragraph,
-                                'timestring': timestring, 'uuid': unique_id, "memory_type": "file_process"}
-                    save_json(f'nexus/file_process_memory_nexus/%s.json' % unique_id, metadata)
-                    payload.append((unique_id, vector, {"memory_type": "file_process"}))
-                    vdb.upsert(payload, namespace=f'Tools_User_{username}_Bot_{bot_name}')
-                    payload.clear()
-                    filecheck.clear()        
-                    pass  
-                else:
-                    print('---------')
-                    print(f'\n\n\nERROR MESSAGE FROM BOT: {fileyescheck}\n\n\n')                          
-        table = filelist
-        
-        return table
+                print('---------')
+                print(f'\n\n\nERROR MESSAGE FROM BOT: {fileyescheck}\n\n\n')
+        return filelist
     except Exception as e:
         print(e)
-        table = "Error"
-        return table  
+        return "Error"  
         
         
             
@@ -1440,8 +1454,7 @@ def process_files_in_directory(directory_path, finished_directory_path, chunk_si
                 executor.submit(process_and_move_file, directory_path, finished_directory_path, file, chunk_size, overlap)
     except Exception as e:
         print(e)
-        table = "Error"
-        return table  
+        return "Error"  
 
 
 def process_and_move_file(directory_path, finished_directory_path, file, chunk_size, overlap):
@@ -1452,8 +1465,7 @@ def process_and_move_file(directory_path, finished_directory_path, file, chunk_s
         shutil.move(file_path, finished_file_path)
     except Exception as e:
         print(e)
-        table = "Error"
-        return table  
+        return "Error"  
         
 # usage - process_files_in_directory('Text_Docs', 'Text_Docs/Finished')
         
@@ -1462,23 +1474,20 @@ def load_conversation_file_process_memory(results):
     username = open_file('./config/prompt_username.txt')
     bot_name = open_file('./config/prompt_bot_name.txt')
     try:
-        result = list()
+        result = []
         for m in results['matches']:
-            info = load_json(f'nexus/file_process_memory_nexus/%s.json' % m['id'])
+            info = load_json(f"nexus/file_process_memory_nexus/{m['id']}.json")
             result.append(info)
         ordered = sorted(result, key=lambda d: d['time'], reverse=False)  # sort them all chronologically
         messages = [i['message'] for i in ordered]
         return '\n'.join(messages).strip()
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
         
 
 def fail():
-  #  print('')
-    fail = "Not Needed"
-    return fail
+    return "Not Needed"
     
     
 def search_file_process_db(line):
@@ -1490,14 +1499,12 @@ def search_file_process_db(line):
     try:
         with lock:
             line_vec = gpt3_embedding(line)
-            results = vdb.query(vector=line_vec, filter={
-        "memory_type": "file_process"}, top_k=30, namespace=f'Tools_User_{username}_Bot_{bot_name}')
-            table = load_conversation_file_process_memory(results)
-            return table
+                results = vdb.query(vector=line_vec, filter={
+            "memory_type": "file_process"}, top_k=30, namespace=f'Tools_User_{username}_Bot_{bot_name}')
+            return load_conversation_file_process_memory(results)
     except Exception as e:
         print(e)
-        table = "Error"
-        return table
+        return "Error"
 
 
 

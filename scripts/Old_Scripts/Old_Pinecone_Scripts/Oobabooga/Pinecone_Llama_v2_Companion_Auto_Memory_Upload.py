@@ -33,7 +33,7 @@ import shutil
 def load_conversation_explicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -45,7 +45,7 @@ def load_conversation_explicit_short_term_memory(results):
 def load_conversation_explicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/explicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -57,7 +57,7 @@ def load_conversation_explicit_long_term_memory(results):
 def load_conversation_episodic_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -69,7 +69,7 @@ def load_conversation_episodic_memory(results):
 def load_conversation_flashbulb_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -81,7 +81,7 @@ def load_conversation_flashbulb_memory(results):
 def load_conversation_heuristics(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % m['id'])
         result.append(info)
@@ -93,7 +93,7 @@ def load_conversation_heuristics(results):
 def load_conversation_implicit_short_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -105,7 +105,7 @@ def load_conversation_implicit_short_term_memory(results):
 def load_conversation_cadence(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % m['id'])
         result.append(info)
@@ -117,7 +117,7 @@ def load_conversation_cadence(results):
 def load_conversation_implicit_long_term_memory(results):
     bot_name = open_file('./config/prompt_bot_name.txt')
     username = open_file('./config/prompt_username.txt')
-    result = list()
+    result = []
     for m in results['matches']:
         info = load_json(f'nexus/{bot_name}/{username}/implicit_long_term_memory_nexus/%s.json' % m['id'])
         result.append(info)
@@ -128,14 +128,12 @@ def load_conversation_implicit_long_term_memory(results):
 def timeout_check():
     try:
         pinecone.init(api_key=open_file('api_keys/key_pinecone.txt'), environment=open_file('api_keys/key_pinecone_env.txt'))
-        vdb = pinecone.Index("aetherius")
-        return vdb
+        return pinecone.Index("aetherius")
     except pinecone.exceptions.PineconeException as e:
-        if "timed out" in str(e):
-            print("Connection timed out. Reconnecting...")
-            timeout_check()
-        else:
+        if "timed out" not in str(e):
             raise e
+        print("Connection timed out. Reconnecting...")
+        timeout_check()
 
 
 
@@ -577,24 +575,21 @@ def oobabooga_consolidationmem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and combine the different associated topics into executive summaries. Each summary should contain the entire context of the memory. Follow the format •Executive Summary",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.85,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -608,13 +603,12 @@ def oobabooga_consolidationmem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -636,24 +630,21 @@ def oobabooga_associativemem(prompt):
         'user_input': prompt,
         'max_new_tokens': 500,
         'history': history,
-        'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-        'instruction_template': 'Llama-v2',  # Will get autodetected if unset
-        'context_instruct': f"Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",  # Optional
+        'mode': 'instruct',
+        'instruction_template': 'Llama-v2',
+        'context_instruct': "Read the Log and consolidate the different memories into executive summaries in a process allegorical to associative processing. Each summary should contain the entire context of the memory. Follow the bullet point format: •<EMOTIONAL TAG>: <CONSOLIDATED MEMORY>",
         'your_name': f'{username}',
-
         'regenerate': False,
         '_continue': False,
         'stop_at_newline': False,
         'chat_generation_attempts': 1,
-        # Generation params. If 'preset' is set to different than 'None', the values
-        # in presets/preset-name.yaml are used instead of the individual numbers.
-        'preset': 'None',  
+        'preset': 'None',
         'do_sample': True,
         'temperature': 0.7,
         'top_p': 0.1,
         'typical_p': 1,
-        'epsilon_cutoff': 0,  # In units of 1e-4
-        'eta_cutoff': 0,  # In units of 1e-4
+        'epsilon_cutoff': 0,
+        'eta_cutoff': 0,
         'tfs': 1,
         'top_a': 0,
         'repetition_penalty': 1.18,
@@ -667,13 +658,12 @@ def oobabooga_associativemem(prompt):
         'mirostat_mode': 0,
         'mirostat_tau': 5,
         'mirostat_eta': 0.1,
-
         'seed': -1,
         'add_bos_token': True,
         'truncation_length': 4096,
         'ban_eos_token': False,
         'skip_special_tokens': True,
-        'stopping_strings': []
+        'stopping_strings': [],
     }
 
     response = requests.post(URI, json=request)
@@ -1146,7 +1136,6 @@ def DB_Upload_Cadence(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     while True:
-        payload = list()
      #   a = input(f'\n\nUSER: ')
         if query == 'Delete All Data':
             while True:
@@ -1160,14 +1149,9 @@ def DB_Upload_Cadence(query):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Cadence delete cancelled.')
                     return
-            else:
-                pass
         if query == 'Exit':
             while True:
                 return
-            else:
-                pass
-
         vector = model.encode([query]).tolist()
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -1175,7 +1159,7 @@ def DB_Upload_Cadence(query):
         metadata = {'speaker': bot_name, 'time': timestamp, 'message': query, 'timestring': timestring,
                     'uuid': unique_id, "memory_type": "cadence", "user": username}
         save_json(f'nexus/{bot_name}/{username}/cadence_nexus/%s.json' % unique_id, metadata)
-        payload.append((unique_id, vector, {"memory_type": "cadence", "user": username}))
+        payload = [(unique_id, vector, {"memory_type": "cadence", "user": username})]
         vdb.upsert(payload, namespace=f'{bot_name}')
         print('\n\nSYSTEM: Upload Successful!')
         return query
@@ -1194,7 +1178,6 @@ def DB_Upload_Heuristics(query):
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
     while True:
-        payload = list()
     #    a = input(f'\n\nUSER: ')
         if query == 'Delete All Data':
             while True:
@@ -1208,14 +1191,9 @@ def DB_Upload_Heuristics(query):
                 elif user_input == 'n':
                     print('\n\nSYSTEM: Heuristics delete cancelled.')
                     return
-            else:
-                pass
         if query == 'Exit':
             while True:
                 return
-            else:
-                pass
-                
         vector = model.encode([query]).tolist()
         timestamp = time()
         timestring = timestamp_to_datetime(timestamp)
@@ -1223,7 +1201,13 @@ def DB_Upload_Heuristics(query):
         metadata = {'speaker': bot_name, 'time': timestamp, 'message': query, 'timestring': timestring,
                     'uuid': unique_id, "memory_type": "heuristics", "user": username}
         save_json(f'nexus/{bot_name}/{username}/heuristics_nexus/%s.json' % unique_id, metadata)
-        payload.append((unique_id, vector, {"memory_type": "heuristics", "user": username}))
+        payload = [
+            (
+                unique_id,
+                vector,
+                {"memory_type": "heuristics", "user": username},
+            )
+        ]
         vdb.upsert(payload, namespace=f'{bot_name}')
         print('\n\nSYSTEM: Upload Successful!')
         return query
@@ -1236,24 +1220,24 @@ def ask_upload_implicit_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
         lines = memories.splitlines()
+        payload = []
         for line in lines:
-            if line.strip() == '':  # This condition checks for blank lines
+            if line.strip() == '':
                 continue
-            else:
-                print(line)
-                vector = model.encode([line]).tolist()  # Assuming you have the gpt3_embedding function defined
-                unique_id = str(uuid4())
-                metadata = {'bot': bot_name, 'time': timestamp, 'message': line, 'timestring': timestring,
-                            'uuid': unique_id, "memory_type": "implicit_short_term"}
-                save_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % unique_id, metadata)
-                payload.append((unique_id, vector, {"memory_type": "implicit_short_term"}))
-                vdb.upsert(payload, namespace=f'short_term_memory_User_{username}_Bot_{bot_name}')
-                payload.clear()
+            print(line)
+            vector = model.encode([line]).tolist()  # Assuming you have the gpt3_embedding function defined
+            unique_id = str(uuid4())
+            metadata = {'bot': bot_name, 'time': timestamp, 'message': line, 'timestring': timestring,
+                        'uuid': unique_id, "memory_type": "implicit_short_term"}
+            save_json(f'nexus/{bot_name}/{username}/implicit_short_term_memory_nexus/%s.json' % unique_id, metadata)
+            payload.append((unique_id, vector, {"memory_type": "implicit_short_term"}))
+            vdb.upsert(payload, namespace=f'short_term_memory_User_{username}_Bot_{bot_name}')
+            payload.clear()
         print('\n\nSYSTEM: Upload Successful!')
     else:
         # User clicked "No"
@@ -1267,24 +1251,24 @@ def ask_upload_explicit_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
         lines = memories.splitlines()
+        payload = []
         for line in lines:
-            if line.strip() == '':  # This condition checks for blank lines
+            if line.strip() == '':
                 continue
-            else:
-                print(line)
-                vector = model.encode([line]).tolist()  # Assuming you have the gpt3_embedding function defined
-                unique_id = str(uuid4())
-                metadata = {'bot': bot_name, 'time': timestamp, 'message': line, 'timestring': timestring,
-                            'uuid': unique_id, "memory_type": "explicit_short_term"}
-                save_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % unique_id, metadata)
-                payload.append((unique_id, vector, {"memory_type": "explicit_short_term"}))
-                vdb.upsert(payload, namespace=f'short_term_memory_User_{username}_Bot_{bot_name}')
-                payload.clear()
+            print(line)
+            vector = model.encode([line]).tolist()  # Assuming you have the gpt3_embedding function defined
+            unique_id = str(uuid4())
+            metadata = {'bot': bot_name, 'time': timestamp, 'message': line, 'timestring': timestring,
+                        'uuid': unique_id, "memory_type": "explicit_short_term"}
+            save_json(f'nexus/{bot_name}/{username}/explicit_short_term_memory_nexus/%s.json' % unique_id, metadata)
+            payload.append((unique_id, vector, {"memory_type": "explicit_short_term"}))
+            vdb.upsert(payload, namespace=f'short_term_memory_User_{username}_Bot_{bot_name}')
+            payload.clear()
         print('\n\nSYSTEM: Upload Successful!')
         return 'yes'
     else:
@@ -1299,16 +1283,23 @@ def ask_upload_episodic_memories(memories):
     bot_name = open_file('./config/prompt_bot_name.txt')
     timestamp = time()
     timestring = timestamp_to_datetime(timestamp)
-    payload = list()
-    result = messagebox.askyesno("Upload Memories", "Do you want to upload memories?")
-    if result:
+    if result := messagebox.askyesno(
+        "Upload Memories", "Do you want to upload memories?"
+    ):
         # User clicked "Yes"
-        vector = model.encode([timestring + '-' + conv_summary]).tolist()
+        vector = model.encode([f'{timestring}-{conv_summary}']).tolist()
         unique_id = str(uuid4())
-        metadata = {'speaker': bot_name, 'time': timestamp, 'message': (timestring + '-' + conv_summary),
-                    'timestring': timestring, 'uuid': unique_id, "memory_type": "episodic", "user": username}
+        metadata = {
+            'speaker': bot_name,
+            'time': timestamp,
+            'message': f'{timestring}-{conv_summary}',
+            'timestring': timestring,
+            'uuid': unique_id,
+            "memory_type": "episodic",
+            "user": username,
+        }
         save_json(f'nexus/{bot_name}/{username}/episodic_memory_nexus/%s.json' % unique_id, metadata)
-        payload.append((unique_id, vector, {"memory_type": "episodic", "user": username}))
+        payload = [(unique_id, vector, {"memory_type": "episodic", "user": username})]
         vdb.upsert(payload, namespace=f'{bot_name}')
         payload.clear()
         payload.append((unique_id, vector_input))
@@ -1341,9 +1332,7 @@ class MainConversation:
 
     def append(self, timestring, username, a, bot_name, response_two):
         # Append new entry to the running conversation
-        entry = []
-        entry.append(f"{timestring}-{username}: {a}")
-        entry.append(f"Response: {response_two}")
+        entry = [f"{timestring}-{username}: {a}", f"Response: {response_two}"]
         self.running_conversation.append("\n\n".join(entry))  # Join the entry with "\n\n"
 
         # Remove oldest entry if conversation length exceeds max entries
@@ -1376,10 +1365,7 @@ class MainConversation:
         return self.main_conversation + ["\n\n".join(entry.split("\n\n")) for entry in self.running_conversation]
         
     def get_last_entry(self):
-        if self.running_conversation:
-            return self.running_conversation[-1]
-        else:
-            return None
+        return self.running_conversation[-1] if self.running_conversation else None
         
     
 class ChatBotApplication(tk.Frame):
@@ -1425,7 +1411,7 @@ class ChatBotApplication(tk.Frame):
         # Load the conversation history from the JSON file
         bot_name = open_file('./config/prompt_bot_name.txt')
         username = open_file('./config/prompt_username.txt')
-        
+
         file_path = f'./history/{username}/{bot_name}_main_conversation_history.json'
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -1434,10 +1420,7 @@ class ChatBotApplication(tk.Frame):
             conversation_history = conversation_data['main_conversation'] + conversation_data['running_conversation']
             # Display the conversation history in the text widget
             for entry in conversation_history:
-                if isinstance(entry, list):
-                    message = '\n'.join(entry)
-                else:
-                    message = entry
+                message = '\n'.join(entry) if isinstance(entry, list) else entry
                 self.conversation_text.insert(tk.END, message + '\n\n')
         except FileNotFoundError:
             # Handle the case when the JSON file is not found
@@ -1448,21 +1431,23 @@ class ChatBotApplication(tk.Frame):
     
     # Edit Bot Name
     def choose_bot_name(self):
-        bot_name = simpledialog.askstring("Choose Bot Name", "Type a Bot Name:")
-        if bot_name:
+        if bot_name := simpledialog.askstring(
+            "Choose Bot Name", "Type a Bot Name:"
+        ):
             file_path = "./config/prompt_bot_name.txt"
             with open(file_path, 'w') as file:
                 file.write(bot_name)
             self.conversation_text.delete("1.0", tk.END)
-            self.display_conversation_history() 
+            self.display_conversation_history()
             self.master.destroy()
             Pinecone_Llama_v2_Companion_Auto_Memory_Upload()
         
 
     # Edit User Name
     def choose_username(self):
-        username = simpledialog.askstring("Choose Username", "Type a Username:")
-        if username:
+        if username := simpledialog.askstring(
+            "Choose Username", "Type a Username:"
+        ):
             file_path = "./config/prompt_username.txt"
             with open(file_path, 'w') as file:
                 file.write(username)
@@ -1470,7 +1455,6 @@ class ChatBotApplication(tk.Frame):
             self.display_conversation_history()
             self.master.destroy()
             Pinecone_Llama_v2_Companion_Auto_Memory_Upload()
-        pass
         
         
     # Edits Main Chatbot System Prompt

@@ -47,11 +47,11 @@ class SubApplication(tk.Toplevel):
 
         files = os.listdir('scripts/' + self.function_name.replace('Menu_', ''))
         scripts = [file for file in files if file.endswith('.py')]
-        for i, script in enumerate(scripts):
+        for script in scripts:
             script_name = script[:-3].replace('_', ' ')
             button = customtkinter.CTkButton(self, text=script_name, command=lambda s=script: self.run_script(s), font=(font_config, 14))
             button.pack(side="top", pady=3)  # Added pady=5 for spacing between buttons
-            
+
         exit_button = customtkinter.CTkButton(self, text="Exit", command=self.destroy)
         exit_button.pack(side="bottom")
 
@@ -69,7 +69,7 @@ class Application(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title('Aetherius Main Menu')
-        self.geometry(f"{500}x{400}")  # adjust as needed
+        self.geometry('500x400')
         self.create_widgets()
         customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 
@@ -82,8 +82,8 @@ class Application(customtkinter.CTk):
             font_size_config = 10
         font_style = (f"{font_config}", font_size_config)
         font_style_bold = (f"{font_config}", font_size_config, "bold")
-        
-        
+
+
 
 
      #   self.configure(bg=background_color)
@@ -98,7 +98,7 @@ class Application(customtkinter.CTk):
 
         files = os.listdir('scripts')
         scripts = [file for file in files if file.endswith('.py')]
-        for i, script in enumerate(scripts):
+        for script in scripts:
             script_name = script[:-3].replace('Menu_', '').replace('_', ' ')
             button = customtkinter.CTkButton(self, text=script_name, command=lambda s=script: self.run_script(s), font=("Arial", 14))
             button.pack(side="top", pady=3)
@@ -135,8 +135,8 @@ if __name__ == '__main__':
         os.makedirs(f'nexus/{bot_name}/{username}/flashbulb_memory_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/heuristics_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/heuristics_nexus')
-    if not os.path.exists(f'nexus/global_heuristics_nexus'):
-        os.makedirs(f'nexus/global_heuristics_nexus')
+    if not os.path.exists('nexus/global_heuristics_nexus'):
+        os.makedirs('nexus/global_heuristics_nexus')
     if not os.path.exists(f'nexus/{bot_name}/{username}/cadence_nexus'):
         os.makedirs(f'nexus/{bot_name}/{username}/cadence_nexus')
     if not os.path.exists(f'logs/{bot_name}/{username}/complete_chat_logs'):
